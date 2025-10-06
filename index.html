@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Plot Developer</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* --- Custom Theme Variables (from style.css) --- */
+        :root {
+            --accent-yellow: #FFC300; 
+            --header-height: 80px;
+
+            /* Light Mode Defaults */
+            --color-primary: #0A1931; 
+            --color-background: #ffffff;
+            --color-secondary-bg: #f5f5f5;
+            --color-text: #333333;
+            --color-text-light: #777777;
+            --color-border: #eeeeee;
+        }
+
+        /* Dark Mode Overrides */
+        [data-theme="dark"] {
+            --color-primary: #FFC300; 
+            --color-background: #121212; 
+            --color-secondary-bg: #1e1e1e;
+            --color-text: #ffffff; 
+            --color-text-light: #cccccc;
+            --color-border: #333333;
+        }
+
+        /* --- Global Base Styles (from style.css) --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s; 
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--color-text);
+            background-color: var(--color-background);
+            scroll-behavior: smooth; 
+        }
+
+        /* Apply custom colors using Tailwind's arbitrary values */
+        .bg-primary { background-color: var(--color-primary); }
+        .text-primary { color: var(--color-primary); }
+        .bg-accent-yellow { background-color: var(--accent-yellow); }
+        .text-accent-yellow { color: var(--accent-yellow); }
+        .bg-secondary-bg { background-color: var(--color-secondary-bg); }
+        .text-text { color: var(--color-text); }
+        .border-border { border-color: var(--color-border); }
+
+        /* ================================================== */
+        /* === FIX 1 CSS: Scrolling Navbar === */
+        /* ================================================== */
+        .main-header {
+            transition: all 0.3s ease; 
+            height: 5rem; /* Initial h-20 */
+        }
+        .main-header.scrolled {
+            height: 4rem; /* h-16 equivalent - smaller */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important; 
+            background-color: var(--color-secondary-bg) !important; 
+            border-bottom-color: var(--accent-yellow) !important; 
+        }
+
+        /* ================================================= */
+        /* === FIX 2 & 3 CSS: Mobile Menu (ONLY affects mobile) === */
+        /* ================================================= */
+        /* NOTE: The menu starts with 'hidden md:block' in HTML. */
+        @media (max-width: 767px) {
+            
+            /* When the menu-open class is applied by JavaScript, force display: block */
+            #main-nav.menu-open {
+                display: block !important;
+                background-color: var(--color-background) !important; 
+            }
+            
+            /* Force visibility of text/links against the background */
+            #main-nav.menu-open ul a {
+                color: var(--color-text) !important; 
+            }
+        }
+        /* ================================================= */
+
+        /* --- Theme Toggle Switch (Kept from original CSS) --- */
+        .theme-checkbox { display: none; }
+        .theme-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 60px;
+            height: 30px;
+            background-color: var(--color-secondary-bg);
+            border-radius: 15px;
+            cursor: pointer;
+            padding: 5px;
+            position: relative;
+        }
+        .theme-switch::before {
+            content: "";
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: var(--color-primary);
+            border-radius: 50%;
+            transform: translateX(0);
+            transition: transform 0.3s;
+            z-index: 0;
+        }
+        .theme-checkbox:checked + .theme-switch::before {
+            transform: translateX(30px);
+            background-color: var(--color-text);
+        }
+        .theme-switch .fa-moon, .theme-switch .fa-sun { z-index: 1; }
+        .theme-checkbox:checked + .theme-switch .fa-moon { color: var(--color-primary); }
+        .theme-checkbox:checked + .theme-switch .fa-sun { color: var(--color-text-light); }
+        
+        /* Hero Background Animation (from style.css) */
+        .hero-section {
+            background-size: cover;
+            background-position: center;
+            animation: bgChange 9s infinite;
+        }
+        @keyframes bgChange {
+            0% { background-image: url('assets/s20.avif'); }
+            33% { background-image: url('assets/s21.avif'); }
+            66% { background-image: url('assets/s22.avif'); }
+            100% { background-image: url('assets/s23.jpg'); }
+        }
+
+        /* --- Team Grid Specifics (Responsive adaptation of original grid) --- */
+        /* Default 2-column grid for mobile/tablet */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            grid-auto-rows: minmax(100px, auto);
+        }
+        /* Desktop/Large Screen Complex Grid (lg: prefix applies to 1024px and up) */
+        @media (min-width: 1024px) {
+            .team-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .team-member:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+            .team-member:nth-child(3) { grid-row: span 3; }
+            .team-member:nth-child(4) { grid-column: span 1; grid-row: span 2; }
+            .team-member:nth-child(8) { grid-column: span 2; grid-row: span 1; }
+            /* Reset others for clarity */
+            .team-member:nth-child(2), .team-member:nth-child(5), .team-member:nth-child(6), .team-member:nth-child(7), .team-member:nth-child(9), .team-member:nth-child(10), .team-member:nth-child(11), .team-member:nth-child(12) {
+                grid-column: span 1; grid-row: span 1;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="join-us-banner-container bg-secondary-bg relative flex items-center justify-center py-2 px-5 md:px-10">
+        <div class="join-us-banner bg-accent-yellow text-primary font-semibold py-1 px-3 rounded-md text-sm md:text-base" style="color: red;">
+            Interested in joining our team? 
+            <a href="#join-us" class="text-blueviolet underline" style="color: blueviolet;">Apply Now</a>
+        </div>
+
+        <div class="location-info hidden md:flex items-center gap-2 absolute right-5 top-1/2 transform -translate-y-1/2 text-text text-sm">
+            <i class="fas fa-map-marker-alt text-red-600"></i>
+            <a href="https://maps.app.goo.gl/6Mskr3ihjfq5SbA27" target="_blank" class="text-text hover:underline">View Location</a>
+        </div>
+    </div>
+    
+    <header id="main-header" class="main-header bg-background sticky top-0 z-50 flex items-center justify-between h-20 border-b border-border shadow-md px-5 md:px-10">
+        <div class="flex items-center gap-3">
+            <div class="logo">
+                <img src="assets/LOGO.jpg" alt="Logo" class="max-h-12 w-auto block">
+            </div>
+            <h1 class="text-xl md:text-2xl text-text font-bold">Dream Plot Developer</h1>
+        </div>
+        
+        <nav id="main-nav" class="main-nav hidden md:block absolute top-full left-0 w-full bg-background border-t border-border md:relative md:w-auto md:top-auto md:bg-transparent md:border-t-0 p-4 md:p-0 shadow-lg md:shadow-none z-40">
+            <ul class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-3 lg:space-x-6">
+                <li><a href="#hero-section" class="text-text hover:text-accent-yellow px-2 py-1 rounded-lg font-medium transition duration-150 block md:inline">Home</a></li>
+                <li><a href="#about-section" class="text-text hover:text-accent-yellow px-2 py-1 rounded-lg font-medium transition duration-150 block md:inline">About</a></li>
+                <li><a href="#properties-section" class="text-text hover:text-accent-yellow px-2 py-1 rounded-lg font-medium transition duration-150 block md:inline">Properties</a></li>
+                <li><a href="#blog-section" class="text-text hover:text-accent-yellow px-2 py-1 rounded-lg font-medium transition duration-150 block md:inline">Blog</a></li>
+                <li><a href="#vision-section" class="text-text hover:text-accent-yellow px-2 py-1 rounded-lg font-medium transition duration-150 block md:inline">Our Vision</a></li>
+                <li><a href="#contact-section" class="text-text hover:text-accent-yellow px-2 py-1 rounded-lg font-medium transition duration-150 block md:inline">Contact Us</a></li>
+            </ul>
+        </nav>
+        
+        <div class="flex items-center space-x-4">
+            <div class="theme-switch-wrapper">
+                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                <label for="theme-toggle" class="theme-switch">
+                    <i class="fas fa-sun text-gray-500"></i>
+                    <i class="fas fa-moon text-gray-800"></i>
+                </label>
+            </div>
+            
+            <div class="contact-info bg-primary text-background p-2 rounded-lg text-sm hidden lg:flex items-center gap-1">
+                <i class="fas fa-phone-alt fa-flip-horizontal text-accent-yellow"></i>
+                <span class="text-white">Contact Us:</span>
+                <a href="https://wa.me/919695158009" target="_blank" class="text-blueviolet hover:underline text-white/90"> +91 9695158009</a>
+            </div>
+            
+            <button id="mobile-menu-button" class="md:hidden text-text text-xl">
+                <i id="mobile-menu-icon" class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div id="page-content">
+
+        <section id="home-page" class="page-section">
+            
+            <section id="hero-section" class="hero-section relative min-h-[calc(100vh-80px)] flex items-center justify-center">
+                <div class="hero-overlay bg-black/50 absolute inset-0"></div>
+                
+                <div class="hero-content-container relative z-10 w-11/12 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6 p-4 lg:p-0">
+                    
+                    <div class="text-content bg-primary text-white p-8 md:p-12 max-w-full lg:max-w-xl rounded-xl shadow-2xl">
+                        <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-white">
+                            Focuses on trust and <span class="text-accent-yellow" style="color: blueviolet;">long-term Investment </span> of the Clients
+                        </h1>
+                        <p class="text-base md:text-lg mb-6 text-white/80">
+                            We Provide best Investment and Residential plot in Prayagraj, Lucknow, Varanasi and NCR
+                        </p>
+                        <a href="#properties-section" class="btn-primary bg-accent-yellow text-primary font-bold py-3 px-6 rounded-lg hover:bg-yellow-500 transition duration-300 inline-block" style="color: blueviolet;">Browse Plot Now</a>
+                        
+                        <div class="lg:hidden mt-4 bg-accent-yellow text-primary rounded-lg shadow-lg">
+                            <a href="https://youtube.com/@dreamplotdeveloper?si=F8mxOdc0CObJjjYT" target="_blank" class="flex items-center justify-center p-3 font-bold gap-2 hover:bg-yellow-500 transition duration-300" style="color: blueviolet;">
+                                <i class="fas fa-play-circle text-xl"></i>
+                                <span class="text-base">View Promo Video</span>
+                            </a>
+                        </div>
+                        </div>
+                    
+                    <div class="video-cta-container hidden lg:flex w-20 h-[400px] bg-accent-yellow items-center justify-center rounded-r-xl shadow-2xl -ml-6">
+                        <a href="https://youtube.com/@dreamplotdeveloper?si=F8mxOdc0CObJjjYT" target="_blank" class="video-cta flex flex-col items-center text-primary transform rotate-90 whitespace-nowrap" style="color: blueviolet;">
+                            <span class="font-bold text-sm transform rotate-180 mb-1" style="color: blueviolet;">View Promo Video</span>
+                            <i class="fas fa-play-circle text-4xl transform -rotate-90"></i>
+                        </a>
+                    </div>
+                    <div class="hero-stats-card bg-white text-black p-5 md:p-8 rounded-xl shadow-2xl max-w-sm lg:max-w-xs w-full border-4 border-blueviolet text-text">
+                        <h2 class="text-2xl font-bold mb-5 text-blueviolet text-primary">Our Stats</h2>
+                        <div class="stats-grid grid grid-cols-2 gap-4">
+                            <div class="stat-item">
+                                <h3 class="counter text-2xl font-bold text-primary" data-target="3">0</h3>
+                                <p class="text-sm text-gray-600">Current Projects</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3 class="counter text-2xl font-bold text-primary" data-target="5">0</h3>
+                                <p class="text-sm text-gray-600">Upcoming Projects</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3 class="counter text-2xl font-bold text-primary" data-target="156">0</h3>
+                                <p class="text-sm text-gray-600">Professional Agents</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3 class="counter text-2xl font-bold text-primary" data-target="768">0</h3>
+                                <p class="text-sm text-gray-600">Happy Customers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="about-section" class="content-section about-section py-20 px-4 md:px-10 max-w-7xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-3 text-primary">About Dream Plot Developer</h2>
+                <p class="section-lead text-lg text-text-light mb-12">We redefine the future of home ownership through Ethics, Honesty and seamless Integrity.</p>
+                <div class="about-grid grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="about-item bg-secondary-bg p-8 rounded-xl border border-border shadow-md transition duration-300 hover:shadow-lg text-left">
+                        <i class="fas fa-hammer text-3xl text-accent-yellow mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2 text-text">Ethics</h3>
+                        <p class="text-text-light">Our foundation is unwavering trust. We promise crystal-clear transparency in every transaction, prioritizing your long-term financial success above all else.</p>
+                    </div>
+                    <div class="about-item bg-secondary-bg p-8 rounded-xl border border-border shadow-md transition duration-300 hover:shadow-lg text-left">
+                        <i class="fas fa-leaf text-3xl text-accent-yellow mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2 text-text">Honesty</h3>
+                        <p class="text-text-light">Honesty is our highest currency. We commit to absolute truthfulness in every detail, ensuring you have the complete picture for confident, successful decisions.</p>
+                    </div>
+                    <div class="about-item bg-secondary-bg p-8 rounded-xl border border-border shadow-md transition duration-300 hover:shadow-lg text-left">
+                        <i class="fas fa-cogs text-3xl text-accent-yellow mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2 text-text">Integrity</h3>
+                        <p class="text-text-light">We connect every part of your journey, from Web3 technology to construction logistics. Our system is designed for maximum efficiency, creating a smooth, hassle-free path to your new plot.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="blog-section" class="content-section blog-section py-20 px-4 md:px-10 max-w-7xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-3 text-primary">Latest Insights & News</h2>
+                <p class="section-lead text-lg text-text-light mb-12">Stay updated on modular construction trends, sustainability, and smart home technology.</p>
+                <div class="blog-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <article class="blog-post bg-secondary-bg rounded-xl border border-border shadow-md overflow-hidden transition duration-300 hover:shadow-xl">
+                        <div class="blog-image-placeholder h-48 bg-cover bg-center" style="background-image: url('https://placehold.co/400x250/FFE599/0A1931?text=Green+Valley');"></div>
+                        <div class="blog-content p-5 text-left">
+                            <h3 class="text-xl font-semibold mb-2 text-text">Green Valley (Gauhaniya Prayagraj)</h3>
+                            <p class="blog-excerpt text-text-light mb-4 text-sm">Aarna Green Valley, a ready-to-move-in residential housing society located in Gauhania, a prime real estate location in the region...</p>
+                            <a href="https://youtu.be/JbmFviaadPI?si=L7UiXY-rnBvDp0OO" target="_blank" class="text-accent-yellow font-bold hover:underline">Read More</a>
+                        </div>
+                    </article>
+                    <article class="blog-post bg-secondary-bg rounded-xl border border-border shadow-md overflow-hidden transition duration-300 hover:shadow-xl">
+                        <div class="blog-image-placeholder h-48 bg-cover bg-center" style="background-image: url('https://placehold.co/400x250/B4C6E7/0A1931?text=Square+State');"></div>
+                        <div class="blog-content p-5 text-left">
+                            <h3 class="text-xl font-semibold mb-2 text-text">Square Estate (Kalideripuram JHALWA)</h3>
+                            <p class="blog-excerpt text-text-light mb-4 text-sm">The locality is well-connected to key points like Prayagraj Airport, railway stations, and educational institutions such as IIIT, making it a popular choice...</p>
+                            <a href="https://youtu.be/5MvCkWbZY9c?si=NV-jWfG75uA5rqAx" target="_blank" class="text-accent-yellow font-bold hover:underline">Read More</a>
+                        </div>
+                    </article>
+                    <article class="blog-post bg-secondary-bg rounded-xl border border-border shadow-md overflow-hidden transition duration-300 hover:shadow-xl">
+                        <div class="blog-image-placeholder h-48 bg-cover bg-center" style="background-image: url('https://placehold.co/400x250/9FC5F8/0A1931?text=Friends+Colony');"></div>
+                        <div class="blog-content p-5 text-left">
+                            <h3 class="text-xl font-semibold mb-2 text-text">Friends Colony (Puramufti)</h3>
+                            <p class="blog-excerpt text-text-light mb-4 text-sm">Friends Colony is a gated, residential area located within Pura Mufti in the Prayagraj (formerly Allahabad) district of Uttar Pradesh...</p>
+                            <a href="https://youtu.be/qcSQ2JPGjAE?si=G9mShyxqUWSIfuHe" target="_blank" class="text-accent-yellow font-bold hover:underline">Read More</a>
+                        </div>
+                    </article>
+                </div>
+                
+                <section id="properties-section" class="pt-12">
+                    <a href="https://youtube.com/@dreamplotdeveloper?si=75ZwCOuDEMJZfmw-" target="_blank" class="btn-primary bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition duration-300 mt-10 inline-block" style="background-color: var(--color-primary); color: white;">View All Listings</a>
+                </section>
+            </section>
+
+            <section id="vision-section" class="content-section vision-section bg-secondary-bg py-20 px-4 md:px-10">
+                <div class="vision-container flex flex-col lg:flex-row max-w-5xl mx-auto items-center gap-10 text-left">
+                    <div class="ceo-photo-placeholder min-w-[250px] h-[250px] rounded-full border-4 border-accent-yellow overflow-hidden shadow-2xl">
+                        <img src="assets/s13.jpg" alt="CEO Photo" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="vision-text text-center lg:text-left">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-5 text-primary">Our Vision: Building a Smarter Future</h2>
+                        <blockquote class="ceo-quote italic text-xl md:text-2xl leading-relaxed my-5 border-l-4 border-accent-yellow pl-5 text-text">
+                            At Dream Plot Developer, our commitment is to your secure future. As an MBA-qualified founder, I established this company on a foundation of integrity and transparent growth. We don't just transact property; we meticulously source and develop prime land opportunities designed for significant financial appreciation... Join us in making your next land purchase not just a transaction, but a secure, valuable Dream Plot.
+                        </blockquote>
+                        <p class="ceo-signature font-semibold text-lg text-text mt-5">— Ankit Mishra, CEO, Dream Plot Developer</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="team-section" class="content-section team-section py-20 px-4 md:px-10 max-w-7xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-3 text-primary">Meet Our Dedicated Team</h2>
+                <p class="section-lead text-lg text-text-light mb-12">The passionate people who make sustainable, modern housing possible.</p>
+                <div class="team-grid max-w-5xl mx-auto">
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #A9D18E;">
+                        <img src="assets/s7.jpg" alt="Team Member 1" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #F8CBAD;">
+                        <img src="assets/s2.jpg" alt="Team Member 2" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #9FC5F8;">
+                        <img src="assets/s3.jpg" alt="Team Member 3" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #FFE599;">
+                        <img src="assets/s4.jpg" alt="Team Member 4" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #DDA0DD;">
+                        <img src="assets/s5.jpg" alt="Team Member 5" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #B4C6E7;">
+                        <img src="assets/s6.jpg" alt="Team Member 6" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #F8CBAD;">
+                        <img src="assets/s8.jpg" alt="Team Member 7" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #FFE599;">
+                        <img src="assets/s1.jpg" alt="Team Member 8" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #FFE599;">
+                        <img src="assets/s9.jpg" alt="Team Member 9" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #FFE599;">
+                        <img src="assets/s10.jpg" alt="Team Member 10" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #FFE599;">
+                        <img src="assets/s11.jpg" alt="Team Member 11" class="w-full h-full object-cover block">
+                    </div>
+                    <div class="team-member bg-secondary-bg rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300" style="background-color: #FFE599;">
+                        <img src="assets/s12.jpg" alt="Team Member 12" class="w-full h-full object-cover block">
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact-section" class="content-section contact-section py-20 px-4 md:px-10 max-w-7xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-3 text-primary">Connect With Us</h2>
+                <p class="section-lead text-lg text-text-light mb-12">Start your journey today. Fill out the form for secure communication.</p>
+
+                <div class="contact-form-container flex flex-col lg:flex-row gap-10 max-w-5xl mx-auto text-left">
+                    <form id="contactForm" class="contact-form w-full lg:w-1/2 p-6 bg-secondary-bg rounded-xl border border-border shadow-md" action="https://api.web3forms.com/submit" method="POST">
+                        <input type="hidden" name="access_key" value="YOUR_REAL_ACCESS_KEY_HERE">
+                        <input type="hidden" name="subject" value="New Enquiry from Real Estate Website">
+                        <input type="hidden" name="replyto" value="email">
+
+                        <input name="name" type="text" placeholder="Your name" required class="p-3 my-2 w-full border border-border rounded-lg bg-background text-text"><br>
+                        <input name="email" type="email" placeholder="Your email" required class="p-3 my-2 w-full border border-border rounded-lg bg-background text-text"><br>
+                        <input name="phone" type="tel" placeholder="Your mobile number" required class="p-3 my-2 w-full border border-border rounded-lg bg-background text-text"><br>
+                        <textarea name="message" rows="5" placeholder="Your message" required class="p-3 my-2 w-full border border-border rounded-lg bg-background text-text"></textarea><br>
+                        
+                        <div class="center-row text-center mt-5">
+                            <button type="submit" class="btn-primary bg-accent-yellow text-primary font-bold py-3 px-8 rounded-lg hover:bg-yellow-500 transition duration-300" style="color:blueviolet;">Enquiry Now</button>
+                        </div>
+                    </form>
+                    
+                    <div class="additional-contact-info w-full lg:w-1/2 p-6 bg-secondary-bg rounded-xl border border-border shadow-md text-text">
+                        <h3 class="text-xl font-semibold mb-4 text-primary">Alternative Contact Details</h3>
+                        
+                        <p class="mb-3">
+                            <strong>E-mail ID :</strong> 
+                            <a href="mailto:ankitmishra123@gmail.com" class="text-blue-500 hover:underline block">ankitmishra123@gmail.com</a>
+                            <a href="mailto:ankitmishra15798@gmail.com" class="text-blue-500 hover:underline block">ankitmishra15798@gmail.com</a>
+                        </p>
+                        
+                        <p class="mb-3">
+                            <strong>Head Office:</strong> 4B, Maharishi Dayananda Marg (Near Prayag Inn), Prayagraj<br>
+                            <strong>Branch Office:</strong> 36, Jawahar Lal Nehru Road (Near Parvati Hospital), Prayagraj
+                        </p>
+                        
+                        <p class="mb-3">
+                            <strong>Contact Numbers:</strong> 
+                            <a href="tel:+919695158009" class="text-blue-500 hover:underline mr-3">9695158009</a>
+                            <a href="tel:+917355053035" class="text-blue-500 hover:underline">7355053035</a>
+                        </p>
+                        
+                        <div class="whatsapp-links mt-4">
+                            <i class="fab fa-whatsapp text-green-500 mr-2"></i> Chat on WhatsApp:
+                            <a href="https://wa.me/919695158009" target="_blank" class="text-blue-500 hover:underline mr-4">9695158009</a>
+                            <a href="https://wa.me/917355053035" target="_blank" class="text-blue-500 hover:underline">7355053035</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <section id="join-us-page" class="page-section hidden">
+            <main id="join-us-main-content" class="min-h-screen flex justify-center items-center py-10 bg-secondary-bg">
+                <div class="container bg-background p-8 md:p-12 rounded-xl shadow-2xl max-w-3xl w-full mx-4 border border-border">
+                    <h1 class="application-title text-3xl md:text-4xl font-bold text-primary text-center mb-2">Join the Dream Plot Developer Team</h1>
+                    <p class="text-center text-text-light mb-8">We're looking for passionate individuals to help us build the future of modular living.</p>
+                    
+                    <form id="joinUsForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data">
+                        
+                        <input type="hidden" name="access_key" value="0707fb22-3887-4dc9-832f-1138c8606aab">
+                        <input type="hidden" name="subject" value="New Job Application - Dream Plot Developer">
+                        <input type="hidden" name="replyto" value="email">
+                        <div class="form-group mb-5">
+                            <label for="name" class="block font-semibold mb-2 text-text">Full Name</label>
+                            <input type="text" id="name_join" name="name" required class="p-3 w-full border border-border rounded-lg bg-secondary-bg text-text">
+                        </div>
+
+                        <div class="form-group mb-5">
+                            <label for="email" class="block font-semibold mb-2 text-text">Email Address</label>
+                            <input type="email" id="email_join" name="email" required class="p-3 w-full border border-border rounded-lg bg-secondary-bg text-text">
+                        </div>
+
+                        <div class="form-group mb-5">
+                            <label for="position" class="block font-semibold mb-2 text-text">Desired Position</label>
+                            <select id="position" name="position" required class="p-3 w-full border border-border rounded-lg bg-secondary-bg text-text">
+                                <option value="">Select a Role...</option>
+                                <option value="architect">Modular Architect</option>
+                                <option value="sales">Sales Specialist</option>
+                                <option value="engineer">Construction Engineer</option>
+                                <option value="marketing">Digital Marketing</option>
+                                <option value="admin">Administrative Support</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-5">
+                            <label for="address" class="block font-semibold mb-2 text-text">Full Address</label>
+                            <textarea id="address" name="address" rows="3" required class="p-3 w-full border border-border rounded-lg bg-secondary-bg text-text"></textarea>
+                        </div>
+
+                        <div class="form-group mb-8">
+                            <label class="block font-semibold mb-3 text-text">How did you get to know about Dream Plot Developer?</label>
+                            <div class="radio-options flex flex-wrap gap-4 p-4 bg-background rounded-lg border border-border">
+                                <label class="flex items-center text-text"><input type="radio" name="source" value="instagram" required class="w-auto mr-2"> Instagram</label>
+                                <label class="flex items-center text-text"><input type="radio" name="source" value="facebook" class="w-auto mr-2"> Facebook</label>
+                                <label class="flex items-center text-text"><input type="radio" name="source" value="linkedin" class="w-auto mr-2"> LinkedIn</label>
+                                <label class="flex items-center text-text"><input type="radio" name="source" value="word-of-mouth" class="w-auto mr-2"> Locally</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit bg-accent-yellow text-primary font-bold py-3 px-8 w-full rounded-lg hover:bg-yellow-500 transition duration-300 text-blueviolet" style="color: var(--color-primary);">Submit Application</button>
+                    </form>
+                </div>
+            </main>
+        </section>
+
+        <section id="thank-you-page" class="page-section hidden">
+            <main class="thankyou-section min-h-screen flex justify-center items-center py-10 bg-secondary-bg text-center">
+                <div class="thankyou-container bg-background p-10 md:p-16 rounded-xl shadow-2xl max-w-2xl w-full mx-4 border border-border">
+                    <i class="fas fa-check-circle icon text-6xl text-accent-yellow mb-5 block"></i>
+                    <h2 class="text-3xl md:text-4xl font-bold text-accent-yellow mb-4 text-primary">Application Submitted!</h2>
+                    <p class="text-lg leading-relaxed mb-8 text-text">Thank you for taking the time to apply and for your interest in joining the Dream Plot Developer team. We have received your application and will be in touch shortly if your experience aligns with our current openings.</p>
+
+                    <div class="links-section">
+                        <a href="#hero-section" class="btn-primary bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition duration-300 inline-block">Return to Main Page</a>
+                    </div>
+                </div>
+            </main>
+        </section>
+        
+    </div>
+
+    <footer class="text-center py-10 px-5 bg-primary text-background text-sm rounded-t-xl">
+        <div class="social-links mb-5">
+            <a href="https://www.instagram.com/the.mishra8009?utm_source=qr&igsh=MTBnMXY3ZzFpZHB3Zg==" target="_blank" aria-label="Instagram" class="text-background text-2xl mx-3 hover:text-accent-yellow transition duration-300"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.facebook.com/share/p/17KpCWa6LJ/" target="_blank" aria-label="Facebook" class="text-background text-2xl mx-3 hover:text-accent-yellow transition duration-300"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" aria-label="Twitter" class="text-background text-2xl mx-3 hover:text-accent-yellow transition duration-300"><i class="fab fa-twitter"></i></a>
+        </div>
+        <p>© 2025 Dream Plot Developer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        
+        // --- PAGE ROUTING LOGIC ---
+        function showPage(pageId) {
+            const sections = document.querySelectorAll('.page-section');
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            const targetSection = document.getElementById(pageId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                // Removed redundant scroll to allow browser's default anchor scroll
+            } else {
+                document.getElementById('home-page').classList.remove('hidden');
+            }
+        }
+        
+        // FIX: Reworked the routing to properly handle anchor links and prevent double clicks
+        function handleRouting() {
+            const hash = window.location.hash.replace('#', '');
+            
+            // Check for pages that completely hide the main content
+            if (hash === 'join-us') {
+                showPage('join-us-page');
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top for new pages
+            } else if (hash === 'thank-you') {
+                showPage('thank-you-page');
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top for new pages
+            } else {
+                // For all main sections (#about-section, #properties-section, #hero-section, or empty hash)
+                // always show the home page. The browser's native anchor scrolling handles the rest.
+                showPage('home-page');
+            }
+        }
+
+        window.addEventListener('hashchange', handleRouting);
+
+
+        // --- MAIN JAVASCRIPT LOGIC (From script.js) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Initial routing
+            handleRouting(); 
+
+            // --- Theme Toggle ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+            const storedTheme = localStorage.getItem('theme');
+            const currentTheme = storedTheme || 'light';
+            
+            htmlElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                themeToggle.checked = true;
+            }
+
+            themeToggle.addEventListener('change', () => {
+                const theme = themeToggle.checked ? 'dark' : 'light';
+                htmlElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            });
+
+            // --- Form Handling Logic (Contact & Join Us) ---
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', (event) => {
+                    event.preventDefault(); 
+                    
+                    const messageBox = document.createElement('div');
+                    messageBox.style.cssText = `
+                        position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
+                        padding: 20px 30px; background: #0A1931; color: white;
+                        border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 2000;
+                        font-weight: bold; text-align: center; border-left: 5px solid #FFC300;
+                    `;
+                    messageBox.textContent = "Thank you! Your enquiry has been logged successfully.";
+                    document.body.appendChild(messageBox);
+                    
+                    setTimeout(() => {
+                        messageBox.remove();
+                    }, 3000); 
+
+                    contactForm.reset();
+                });
+            }
+
+            const joinUsForm = document.getElementById('joinUsForm');
+            if (joinUsForm) {
+                joinUsForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    window.location.hash = '#thank-you';
+                });
+            }
+
+            // --- Counter Animation ---
+            const counters = document.querySelectorAll(".counter");
+            const speed = 200; 
+
+            counters.forEach(counter => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute("data-target");
+                    const count = +counter.innerText;
+                    const increment = Math.ceil(target / speed);
+
+                    if (count < target) {
+                        counter.innerText = count + increment;
+                        setTimeout(updateCount, 30);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            updateCount();
+                            observer.unobserve(counter);
+                        }
+                    });
+                }, { threshold: 0.5 });
+
+                observer.observe(counter);
+            });
+
+
+            /* ================================== */
+            /* === SCROLLING NAVBAR LOGIC === */
+            /* ================================== */
+            const mainHeader = document.getElementById('main-header');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 80) { 
+                    mainHeader.classList.add('scrolled');
+                } else {
+                    mainHeader.classList.remove('scrolled');
+                }
+            });
+
+
+            /* ================================== */
+            /* === MOBILE MENU TOGGLE LOGIC (Fixed icon not working) === */
+            /* ================================== */
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mainNav = document.getElementById('main-nav');
+            const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+            if (mobileMenuButton && mainNav && mobileMenuIcon) {
+                mobileMenuButton.addEventListener('click', () => {
+                    // 1. Toggle the custom 'menu-open' class
+                    mainNav.classList.toggle('menu-open');
+                    
+                    // 2. FIX: Toggle the icon reliably based on the new state
+                    const isOpen = mainNav.classList.contains('menu-open');
+                    
+                    mobileMenuIcon.classList.toggle('fa-times', isOpen);
+                    mobileMenuIcon.classList.toggle('fa-bars', !isOpen);
+                });
+
+                // Close menu when a navigation link is clicked in mobile view
+                const navLinks = mainNav.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (mainNav.classList.contains('menu-open')) {
+                            // Only run close logic if menu is open
+                            mainNav.classList.remove('menu-open');
+                            mobileMenuIcon.classList.remove('fa-times');
+                            mobileMenuIcon.classList.add('fa-bars');
+                        }
+                    });
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
